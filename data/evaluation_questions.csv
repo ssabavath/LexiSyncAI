@@ -1,0 +1,17 @@
+
+question,question_type,expected_answer
+"What is the maximum administrative fine under Article 83(4)?",factual,"Up to EUR 10 million or 2% of total worldwide annual turnover of the preceding financial year, whichever is higher. Article 83(4), PDF page 71."
+"What is the maximum administrative fine under Article 83(5)?",factual,"Up to EUR 20 million or 4% of total worldwide annual turnover of the preceding financial year, whichever is higher. Article 83(5), PDF page 72."
+"Which categories of violations are covered by Article 83(5)?",factual,"Violations include basic principles of processing, including consent; data subject rights; and rules on transfers of personal data. Article 83(5)."
+"What percentage of worldwide annual turnover is specified in Article 83(5)?",factual,"4% of total worldwide annual turnover of the preceding financial year. Article 83(5)."
+"Which authority ensures that administrative fines are imposed under Article 83(1)?",factual,"Each supervisory authority ensures that administrative fines are effective, proportionate and dissuasive. Article 83(1)."
+"Compare the maximum fine limits in Article 83(4) and Article 83(5).",multi_hop,"Article 83(4) specifies EUR 10 million or 2% turnover; Article 83(5) specifies EUR 20 million or 4% turnover, whichever is higher."
+"How does Article 83(6) relate to the fine limits in Article 83(5)?",multi_hop,"Article 83(6) applies administrative fines to non-compliance with supervisory authority orders under Article 58(2), using the limits described in Article 83(5)."
+"How do the administrative fines in Article 83 differ from the other penalties described in Article 84?",multi_hop,"Article 83 concerns administrative fines imposed under its conditions. Article 84 requires Member States to establish rules for other penalties, particularly for infringements not subject to administrative fines under Article 83."
+"How do the circumstances in Article 83(2) affect the fines described in paragraphs 4 and 5?",multi_hop,"Article 83(2) lists circumstances that must be considered when deciding whether to impose a fine and determining its amount, including the nature, gravity and duration of the infringement."
+"Compare the categories of violations involving processing principles and data subject rights in Article 83(5).",multi_hop,"Article 83(5) covers basic principles for processing, including consent under Articles 5, 6, 7 and 9, and data subject rights under Articles 12 to 22."
+"What is the CEO's home address according to the GDPR?",unanswerable,"The GDPR document does not provide a CEO's home address. Should abstain."
+"What was the exact revenue of a specific company in 2025?",unanswerable,"The GDPR does not provide the exact revenue of a specific company. Should abstain."
+"Which governing law applies to a particular subcontractor agreement?",unanswerable,"No specific subcontractor agreement or governing-law clause is provided. Should abstain."
+"What is the current population of Hamburg according to the GDPR?",unanswerable,"The GDPR does not contain Hamburg population statistics. Should abstain."
+"What is the salary of a particular employee according to the GDPR?",unanswerable,"The GDPR does not provide the salary of a particular employee. Should abstain."
