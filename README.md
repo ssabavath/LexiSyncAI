@@ -161,23 +161,48 @@ LexiSyncAI/
     └── test_chunking.py
 ```
 
-## 7. System Architecture
+## System Architecture
 
-LexiSyncAI follows a Retrieval-Augmented Generation (RAG) architecture.
+The following diagram illustrates the complete LexiSyncAI pipeline.
 
-The main processing stages are:
+```mermaid
+flowchart TD
+    A["User uploads legal PDFs<br/>GDPR and EU AI Act"]
+    B["PDF Ingestion<br/>PyMuPDF"]
+    C["Text Extraction<br/>Page numbers and headings"]
+    D["Clause-aware Chunking<br/>Articles, sections and paragraphs"]
+    E["Document Chunks"]
 
-1. **PDF ingestion:** Users upload legal PDF documents.
-2. **Text extraction:** PyMuPDF extracts selectable text and preserves page information.
-3. **Document chunking:** Extracted text is divided into meaningful chunks based on headings and legal sections.
-4. **Dense embedding generation:** Sentence Transformers converts document chunks into vector representations.
-5. **Keyword indexing:** BM25 creates a keyword-based retrieval index.
-6. **Hybrid retrieval:** Dense retrieval and BM25 results are combined using Reciprocal Rank Fusion.
-7. **Reranking:** A Cross-Encoder optionally reranks the retrieved candidates.
-8. **Evidence selection:** The most relevant passages are selected for answer generation.
-9. **LLM answer generation:** The LLM receives the question and retrieved evidence.
-10. **Evidence-based response:** The application displays answers with document and page references.
-11. **Abstention:** The system avoids generating unsupported answers when sufficient evidence is unavailable.
+    F["Dense Embeddings<br/>Sentence Transformers"]
+    G["BM25 Index<br/>Keyword Retrieval"]
+
+    H["User Question"]
+    I["Dense Retrieval"]
+    J["BM25 Retrieval"]
+    K["Hybrid Results<br/>Merge Candidates"]
+    L["Cross-Encoder Reranking"]
+    M["Top 6 Evidence Chunks"]
+    N["Evidence-Constrained LLM<br/>Groq API"]
+    O{"Sufficient Evidence?"}
+    P["Generate Answer<br/>Page and Clause Citations"]
+    Q["Abstain<br/>Insufficient Evidence"]
+    R["Streamlit User Interface<br/>Answer, Evidence, Citations<br/>and Confidence"]
+
+    A --> B --> C --> D --> E
+    E --> F
+    E --> G
+
+    H --> I
+    H --> J
+    F --> I
+    G --> J
+    I --> K
+    J --> K
+    K --> L --> M --> N --> O
+
+    O -->|Yes| P --> R
+    O -->|No| Q --> R
+```
 
 ## 8. Running the Application
 
