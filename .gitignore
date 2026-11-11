@@ -1,0 +1,7 @@
+.venv/
+__pycache__/
+.pytest_cache/
+.env
+data/pdfs/*.pdf
+data/evaluation_results.csv
+data/evaluation_questions.csv
