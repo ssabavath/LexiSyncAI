@@ -4,4 +4,3 @@ __pycache__/
 .env
 data/pdfs/*.pdf
 data/evaluation_results.csv
-data/evaluation_questions.csv

@@ -2,19 +2,30 @@
 import os
 import re
 import tempfile
+import random
 from pathlib import Path
 
+import numpy as np
+import torch
 import streamlit as st
-from dotenv import load_dotenv
 
+from dotenv import load_dotenv
 from src.pdf_ingest import process_pdf
 from src.retrieval import HybridRetriever
 from src.answer import answer_question
 
 
 # ============================================================
-# 1. CONFIGURATION
+# 1. REPRODUCIBILITY AND CONFIGURATION
 # ============================================================
+
+SEED = 42
+random.seed(SEED)
+np.random.seed(SEED)
+torch.manual_seed(SEED)
+
+if torch.cuda.is_available():
+    torch.cuda.manual_seed_all(SEED)
 
 load_dotenv()
 
@@ -37,7 +48,7 @@ def validate_citations(answer, evidence):
     """
     Validate citation references against retrieved evidence.
 
-    Supports both:
+    Supports:
         [Source 1, GDPR.pdf, p. 71, Article 83(4)]
         【Source 1, GDPR.pdf, p. 71, Article 83(4)】
 
@@ -54,16 +65,13 @@ def validate_citations(answer, evidence):
     total_citations = len(citations)
     reference_matches = 0
     reference_errors = 0
-
     details = []
 
     for source_number_text, citation_details in citations:
 
         source_number = int(source_number_text)
 
-        # Source numbers in the answer start at 1.
         if source_number < 1 or source_number > len(evidence):
-
             reference_errors += 1
 
             details.append({
@@ -71,7 +79,6 @@ def validate_citations(answer, evidence):
                 "status": "INVALID",
                 "reason": "Source number does not exist."
             })
-
             continue
 
         source = evidence[source_number - 1]
@@ -102,7 +109,7 @@ def validate_citations(answer, evidence):
         else:
             errors.append("Page number missing.")
 
-        # Check article number, allowing paragraph references.
+        # Check article number.
         article_match = re.search(
             r"\barticle\s+(\d+[a-z]?)",
             citation_details,
@@ -110,7 +117,6 @@ def validate_citations(answer, evidence):
         )
 
         if article_match:
-
             cited_article = article_match.group(1).lower()
 
             actual_article_match = re.search(
@@ -126,9 +132,6 @@ def validate_citations(answer, evidence):
             )
 
             if not article_matches:
-
-                # Some chunks may have article references in their text
-                # even when section metadata is unavailable.
                 article_matches = bool(
                     re.search(
                         rf"\barticle\s+{re.escape(cited_article)}\b",
@@ -141,7 +144,6 @@ def validate_citations(answer, evidence):
                 errors.append("Article reference mismatch.")
 
         if errors:
-
             reference_errors += 1
 
             details.append({
@@ -149,17 +151,13 @@ def validate_citations(answer, evidence):
                 "status": "INVALID",
                 "reason": " ".join(errors)
             })
-
         else:
-
             reference_matches += 1
 
             details.append({
                 "citation": f"Source {source_number}",
                 "status": "MATCH",
-                "reason": (
-                    f"{document}, page {page}, {section}"
-                )
+                "reason": f"{document}, page {page}, {section}"
             })
 
     return {
@@ -185,14 +183,11 @@ def process_uploaded_pdfs(uploaded_files):
     for index, uploaded_file in enumerate(uploaded_files):
 
         filename = Path(uploaded_file.name).name
-
         status.write(f"Processing {filename}...")
 
         temp_path = None
 
         try:
-
-            # Save uploaded PDF temporarily.
             with tempfile.NamedTemporaryFile(
                 delete=False,
                 suffix=".pdf"
@@ -201,7 +196,6 @@ def process_uploaded_pdfs(uploaded_files):
                 temp_file.write(uploaded_file.getvalue())
                 temp_path = temp_file.name
 
-            # Extract page-level evidence chunks.
             chunks, metadata = process_pdf(
                 temp_path,
                 filename
@@ -221,13 +215,11 @@ def process_uploaded_pdfs(uploaded_files):
             )
 
         except Exception as exc:
-
             st.error(
                 f"Could not process {filename}: {exc}"
             )
 
         finally:
-
             if temp_path and os.path.exists(temp_path):
                 os.remove(temp_path)
 
@@ -242,7 +234,7 @@ def process_uploaded_pdfs(uploaded_files):
 
 
 # ============================================================
-# 4. HEADER
+# 4. APPLICATION HEADER
 # ============================================================
 
 st.title("⚖️ LexiSyncAI")
@@ -328,17 +320,11 @@ if uploaded_files:
                 else:
 
                     try:
-
                         retriever = HybridRetriever(chunks)
 
                         st.session_state.retriever = retriever
-
-                        st.session_state.document_names = (
-                            document_names
-                        )
-
+                        st.session_state.document_names = document_names
                         st.session_state.total_chunks = len(chunks)
-
                         st.session_state.history = []
 
                         st.success(
@@ -376,7 +362,6 @@ else:
         "Upload and process 2–5 PDFs to start asking questions."
     )
 
-
 st.divider()
 
 
@@ -404,7 +389,6 @@ if st.session_state.retriever is not None:
     col1, col2 = st.columns(2)
 
     with col1:
-
         top_k = st.slider(
             "Evidence passages to retrieve",
             min_value=3,
@@ -413,7 +397,6 @@ if st.session_state.retriever is not None:
         )
 
     with col2:
-
         retrieval_mode = st.selectbox(
             "Retrieval method",
             options=["hybrid", "dense", "bm25"],
@@ -469,14 +452,13 @@ if st.session_state.retriever is not None:
                         0
                     )
 
-                    # Support newer answer.py status field
-                    # without requiring it in older versions.
                     answer_status = result.get(
                         "status",
                         "SUCCESS"
                     )
 
                     if answer_status == "API_ERROR":
+
                         st.warning(
                             "LLM API failed. Review the returned message "
                             "before relying on this result."
@@ -486,9 +468,11 @@ if st.session_state.retriever is not None:
                         confidence == "INSUFFICIENT EVIDENCE"
                         or answer.strip() == ABSTAIN_TEXT
                     ):
+
                         answer_status = "ABSTAINED"
 
                     else:
+
                         answer_status = "SUCCESS"
 
                     validation = validate_citations(
@@ -497,6 +481,7 @@ if st.session_state.retriever is not None:
                     )
 
                     st.session_state.history.append({
+
                         "question": question,
                         "answer": answer,
                         "confidence": confidence,
@@ -504,6 +489,7 @@ if st.session_state.retriever is not None:
                         "validation": validation,
                         "latency": latency,
                         "status": answer_status
+
                     })
 
                 except Exception as exc:
@@ -522,7 +508,6 @@ if st.session_state.history:
     latest = st.session_state.history[-1]
 
     st.divider()
-
     st.header("Answer")
 
     st.markdown(latest["answer"])
@@ -539,14 +524,9 @@ if st.session_state.history:
         st.warning("Confidence: LOW")
 
     else:
-        st.warning(
-            f"Confidence: {confidence}"
-        )
+        st.warning(f"Confidence: {confidence}")
 
-    # --------------------------------------------------------
-    # CITATION VALIDATION
-    # --------------------------------------------------------
-
+    # Citation validation.
     st.subheader("Citation reference validation")
 
     validation = latest["validation"]
@@ -593,10 +573,13 @@ if st.session_state.history:
             for detail in validation["details"]:
 
                 if detail["status"] == "MATCH":
+
                     st.success(
                         f'{detail["citation"]}: {detail["reason"]}'
                     )
+
                 else:
+
                     st.error(
                         f'{detail["citation"]}: {detail["reason"]}'
                     )
@@ -612,10 +595,7 @@ if st.session_state.history:
         "legally supports the claim."
     )
 
-    # --------------------------------------------------------
-    # EVIDENCE DISPLAY
-    # --------------------------------------------------------
-
+    # Evidence display.
     st.subheader("Evidence used")
 
     evidence = latest["evidence"]
@@ -651,11 +631,13 @@ if st.session_state.history:
                 )
 
                 if "dense_score" in item:
+
                     st.caption(
                         f"Dense score: {item['dense_score']:.4f}"
                     )
 
                 if "bm25_score" in item:
+
                     st.caption(
                         f"BM25 score: {item['bm25_score']:.4f}"
                     )
