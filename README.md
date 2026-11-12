@@ -384,36 +384,6 @@ python -m pytest -q
 
 The tests help verify that the document chunking functionality works as expected.
 
-## 15. Suggested Demonstration Flow (5 Minutes)
-
-The following demonstration structure can be used during the final assignment presentation.
-
-| Time | Demonstration |
-|---|---|
-| 0:00–0:45 | Introduce the problem and project architecture. |
-| 0:45–1:30 | Upload two public legal PDFs and show document processing. |
-| 1:30–2:30 | Ask a factual question and inspect page-level evidence. |
-| 2:30–3:30 | Ask a multi-hop question and explain evidence retrieval. |
-| 3:30–4:15 | Ask an unanswerable question and demonstrate abstention. |
-| 4:15–5:00 | Explain BM25, dense retrieval, hybrid retrieval, reranking, and evaluation results. |
-
-## 16. Before Submission
-
-- [ ] Verify that the application runs successfully.
-- [ ] Test the application with the selected public legal PDFs.
-- [ ] Prepare at least 15 evaluation questions.
-- [ ] Include factual, multi-hop, and unanswerable questions.
-- [ ] Manually verify generated answers and citations.
-- [ ] Review evaluation metrics and results.
-- [ ] Add screenshots of the working application to the final report.
-- [ ] Include a system architecture diagram.
-- [ ] Prepare an unseen public PDF for the demonstration.
-- [ ] Test three unseen questions.
-- [ ] Check that `.env` and API keys are excluded from GitHub.
-- [ ] Include reproducible installation instructions.
-
----
-
 ## Project Information
 
 **Project Name:** LexiSyncAI – Evidence-Grounded Legal Document Analyst
